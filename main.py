@@ -1,4 +1,6 @@
-from diagram import Diagram
+import logging
+from tests import *
 
-d = Diagram(n=2, connections=[0, 1])
-print(d)
+# logging.basicConfig(level=logging.DEBUG)
+
+test(6)
