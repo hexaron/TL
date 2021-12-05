@@ -1,12 +1,14 @@
 import logging
+from diagram import Diagram
 from tl import TL
+from jones_wenzl import JW
 import tl_tests
 import diagram_tests
 
 # logging.basicConfig(level=logging.DEBUG)
 
-n = 4
-U = [TL.U(n, i) for i in range(n - 1)]
 
-print(U)
-print(sum(U))
+print("JW_3:", JW.get(3))
+print("JW_3^2:", JW.get(3) * JW.get(3))
+
+assert JW.get(4) * JW.get(4) == JW.get(4)

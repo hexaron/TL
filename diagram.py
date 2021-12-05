@@ -57,7 +57,8 @@ class Diagram:
         return Diagram(connections=[(a, 2 * n - a - 1) for a in range(n)])
 
     def U(n, i):
-        assert i < n - 1
+        if not i < n - 1:
+            raise ValueError(f"`i` must be less than `n`-1 for U_i to exist in TL_n: {i}, {n}")
 
         connections = []
 
@@ -77,10 +78,10 @@ class Diagram:
 
     def get_match(self, k):
         for match in self._connections:
-            if match[1] == k:
-                return match[0]
-            elif match[0] == k:
+            if match[0] == k:
                 return match[1]
+            elif match[1] == k:
+                return match[0]
 
     def compose(self, diagram):
         """
@@ -208,6 +209,34 @@ class Diagram:
 
         return Diagram(connections, coefficient)
 
+    def tensor(self, other):
+        """
+        This takes `self` and puts it to the left of `other`.
+        """
+
+        other_offset = self.n
+        self_right_half_offset = 2 * other.n
+
+        connections = []
+
+        for match in self._connections:
+            i, j = match
+
+            if i >= self.n:
+                i += self_right_half_offset
+
+            if j >= self.n:
+                j += self_right_half_offset
+
+            connections.append((i, j))
+
+        for match in other._connections:
+            i, j = match
+
+            connections.append((i + other_offset, j + other_offset))
+
+        return Diagram(connections, self._coefficient * other._coefficient)
+
     def equal(self, other, check_coefficient=False):
         if not self.n == other.n:
             return False
@@ -219,6 +248,10 @@ class Diagram:
 
         # Compare the matches
         for match in self._connections:
+            # assert isinstance(match, tuple)
+            # assert len(str(match)) < 7
+            # if str(match).startswith("\n"):
+            #     assert False
             if match in other._connections:
                 continue
             elif (match[1], match[0]) in other._connections:
@@ -230,7 +263,17 @@ class Diagram:
         return True
 
     def __eq__(self, other):
+        # If there is a check against 0
+        if (isinstance(other, int) or isinstance(other, Fraction) and
+            other == 0):
+            return self._coefficient == 0
+
         return self.equal(other, check_coefficient=True)
+
+    def __and__(self, other):
+        return self.tensor(other)
+
+    __matmul__ = __and__
 
     def __mul__(self, other):
         # Diagram * other

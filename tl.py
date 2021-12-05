@@ -7,10 +7,14 @@ class TL:
     """
     An Element of TL_n, i.e. a linear combiniation of diagrams.
 
+    `n: int`
+            The integer n in TL_n and in 'crossingles matching on 2n vertices'.
+
     `_diagrams`:
             A list of diagrams representing the linear combiniation.
     """
 
+    n: int
     _diagrams: list
 
     def __init__(self, diagrams: list = [Diagram.id(2)]):
@@ -21,6 +25,7 @@ class TL:
             not all(diagram.n == diagrams[0].n for diagram in diagrams)):
             raise ValueError(f"`diagrams` must be a non-empty list of diagrams for the same n: {diagrams}")
 
+        self.n = diagrams[0].n
         self._diagrams = diagrams
 
     def id(n):
@@ -34,49 +39,58 @@ class TL:
         This takes `self` and stacks it on top of `tl`.
         """
 
-        diagrams = []
+        return TL([a * b for a in self._diagrams for b in tl._diagrams]).condense_diagrams()
 
-        for diagram_a in self._diagrams:
-            for diagram_b in tl._diagrams:
-                diagrams.append(diagram_a * diagram_b)
+    def tensor(self, tl):
+        """
+        This takes `self` and puts it to the left of `other`.
+        """
 
-        # We are not done here, because we may have diagrams twice
-        return TL(diagrams).condense_diagrams()
+        return TL([a & b for a in self._diagrams for b in tl._diagrams]).condense_diagrams()
 
     def condense_diagrams(self):
         diagrams = self._diagrams.copy()
         condensed_diagrams = []
 
         while diagrams:
-            diagram = diagrams.pop()
+            diagram = diagrams.pop(0)  # to keep the order
 
-            for other in diagrams:
+            # `.copy()` is necessary because of `remove` in iteration
+            for other in diagrams.copy():
                 if diagram.equal(other):
                     diagram += other
                     diagrams.remove(other)
 
-            condensed_diagrams.append(diagram)
+            if not diagram == 0:
+                condensed_diagrams.append(diagram)
 
         return TL(condensed_diagrams)
 
     def __eq__(self, other):
         # self subset of other
         for diagram in self._diagrams:
-            if diagram in other._diagrams:
+            # Using `diagram in other._diagrams` is not possible
+            if any(diagram.equal(d) for d in other._diagrams):
                 continue
             else:
-                logging.info(f"{repr(self)} is not euqal to {repr(other)} because of {diagram} in {repr(self)}")
+                logging.info(f"{repr(self)} is not euqal to {repr(other)} because of {repr(diagram)} in {repr(self)}")
                 return False
 
         # self superset of other
         for diagram in other._diagrams:
-            if diagram in self._diagrams:
+            # Using `diagram in self._diagrams` is not possible
+            if any(diagram.equal(d) for d in self._diagrams):
                 continue
             else:
-                logging.info(f"{repr(self)} is not euqal to {repr(other)} because of {diagram} in {repr(other)}")
+                logging.info(f"{repr(self)} is not euqal to {repr(other)} because of {repr(diagram)} in {repr(other)}")
                 return False
 
         return True
+
+    def __and__(self, other):
+        return self.tensor(other)
+
+    __matmul__ = __and__
 
     def __mul__(self, other):
         # TL * other
