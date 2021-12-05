@@ -15,14 +15,14 @@ class Diagram:
           | \_/ |
           \_____/
 
-    Sometimes we view the same diagram as a map like:
+    Sometimes we view the same diagram as:
 
         0 1
-        ^ ^
+        | |
         | |
         3 2
 
-    Calling `evaluate(0)` on this would result in 0, because 0 corresponds to 3.
+    Calling `get_match(1)` on this would result in 2.
 
     `n: int`
             The integer n in 'crossingles matching on 2n vertices'.
@@ -33,12 +33,21 @@ class Diagram:
     `_coefficient: Fraction`
             A Fraction
     """
+
     n: int
     _connections: list
     _coefficient: Fraction
 
     def __init__(self, connections: list = [(0, 1)], coefficient:Fraction = Fraction(1, 1)):
-        assert all([isinstance(match, tuple) for match in connections])
+        # Some idiot testing
+        if (not connections or
+            not isinstance(connections, list) or
+            not all(isinstance(match, tuple) for match in connections) or
+            not all(len(match) == 2 for match in connections)):
+            raise ValueError(f"`connections` must be a non-empty list of two element tuples: {connections}")
+
+        if not (isinstance(coefficient, Fraction) or isinstance(coefficient, int)):
+            raise ValueError(f"`coefficient` must be of type `Fraction` or `int`: `{type(coefficient).__name__}`")
 
         self.n = len(connections)
         self._connections = connections
@@ -66,7 +75,7 @@ class Diagram:
 
         return Diagram(connections)
 
-    def evaluate(self, k):
+    def get_match(self, k):
         for match in self._connections:
             if match[1] == k:
                 return match[0]
@@ -77,6 +86,7 @@ class Diagram:
         """
         This takes `self` and stacks it on top of `diagram`.
         """
+
         coefficient = self._coefficient * diagram._coefficient
         connections = []
 
@@ -93,7 +103,7 @@ class Diagram:
         logging.info(todo_middle)
 
         # Run all string from the top
-        while len(todo_top) > 0:
+        while todo_top:
             i = todo_top.pop(0)
             logging.info(f"todo_top - {i}:")
             logging.info(todo_top)
@@ -103,7 +113,7 @@ class Diagram:
             j = i
             while True:
                 if apply_self:
-                    j = self.evaluate(j)
+                    j = self.get_match(j)
 
                     # `self` leads back up
                     if j < self.n:
@@ -122,7 +132,7 @@ class Diagram:
                         apply_self = False
                 else:
                     j = 2 * self.n - j - 1  # Re-indexing
-                    j = diagram.evaluate(j)
+                    j = diagram.get_match(j)
 
                     # `diagram` leads down
                     if j >= self.n:
@@ -142,7 +152,7 @@ class Diagram:
                         apply_self = True
 
         # Run all string from the bottom
-        while len(todo_bottom) > 0:
+        while todo_bottom:
             i = todo_bottom.pop(0)
             logging.info(f"todo_bottom - {i}:")
             logging.info(todo_bottom)
@@ -152,7 +162,7 @@ class Diagram:
             j = i
             while True:
                 if not apply_self:
-                    j = diagram.evaluate(j)
+                    j = diagram.get_match(j)
 
                     # `diagram` leads back dowm
                     if j >= self.n:
@@ -171,7 +181,7 @@ class Diagram:
                         logging.info(todo_middle)
                         apply_self = True
                 else:
-                    j = self.evaluate(j)
+                    j = self.get_match(j)
 
                     # `self` leads up
                     if j < self.n:
@@ -198,53 +208,86 @@ class Diagram:
 
         return Diagram(connections, coefficient)
 
-    def __eq__(self, other):
-        # Compare the connections
-        if not self._coefficient == other._coefficient:
+    def equal(self, other, check_coefficient=False):
+        if not self.n == other.n:
             return False
 
+        # Compare the connections
+        if check_coefficient:
+            if not self._coefficient == other._coefficient:
+                return False
+
+        # Compare the matches
         for match in self._connections:
             if match in other._connections:
                 continue
             elif (match[1], match[0]) in other._connections:
                 continue
             else:
-                print(f"{match}")
+                logging.info(f"{repr(self)} is not euqal to {repr(other)} because of {match} in {repr(self)}")
                 return False
 
         return True
 
+    def __eq__(self, other):
+        return self.equal(other, check_coefficient=True)
+
+    def __mul__(self, other):
+        # Diagram * other
+        # => other is Diagram
+        return self.compose(other)
+
     def __rmul__(self, other):
-        if isinstance(other, Diagram):
-            return other.compose(self)
-        elif isinstance(other, Fraction):
+        # other * Diagram
+        # and other is not Diagram (because __mul__ wans't called)
+        # => other is scalar
+        if isinstance(other, Fraction):
             return Diagram(connections=self._connections,
-                           coefficient=self._coefficient * other)
+                           coefficient=other * self._coefficient)
         elif isinstance(other, int):
             return Fraction(other) * self
 
+    def __add__(self, other):
+        # Diagram + other
+        # => other is Diagram
+        assert self.equal(other)
+
+        return Diagram(self._connections, self._coefficient + other._coefficient)
+
+    def __radd__(self, other):
+        # other + Diagram
+        # and other is not Diagram (because __add__ wasn't called)
+        # => other is 0 (called by `sum`)
+        return self
+
     def __repr__(self):
-        return str(self._connections)
+        return f"{self._coefficient} * {self._connections}"
 
     def __str__(self):
+        """
+        And finally some dang ASCII art.
+        """
+
         string = f"\n{self._coefficient} *\n  "
 
-        string += " ".join(str(i) for i in range(2 * self.n))
+        string += "".join(str(i) + " " if len(str(i)) == 1 else str(i) for i in range(2 * self.n))
 
         for line in range(self.n):
-            # Record which number wants which symbol below (i.e. "|", "\" or "/")
+            # Record which number wants which symbol below (i.e. " ", "|", "\" or "/")
             symbols = [None for i in range(2 * self.n)]
 
             for match in self._connections:
-                if match[1] - match[0] - 1 < 2 * line:
-                    symbols[match[0]] = " "
-                    symbols[match[1]] = " "
-                elif match[1] - match[0] - 1 > 2 * line:
-                    symbols[match[0]] = "|"
-                    symbols[match[1]] = "|"
+                i, j = min(match), max(match)
+
+                if j - i - 1 < 2 * line:
+                    symbols[i] = " "
+                    symbols[j] = " "
+                elif j - i - 1 > 2 * line:
+                    symbols[i] = "|"
+                    symbols[j] = "|"
                 else:
-                    symbols[match[0]] = "\\"
-                    symbols[match[1]] = "/"
+                    symbols[i] = "\\"
+                    symbols[j] = "/"
 
             if all([symbol == " " for symbol in symbols]):
                 break

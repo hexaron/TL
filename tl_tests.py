@@ -1,4 +1,4 @@
-from diagram import Diagram
+from tl import TL
 
 
 def test(n = 3):
@@ -26,10 +26,10 @@ def test_a(n = 4):
 
 """)
 
-    U = [Diagram.U(n, i) for i in range(n - 1)]
+    U = [TL.U(n, i) for i in range(n - 1)]
 
     for i, u in enumerate(U):
-        a, b = u.compose(u), -2 * u
+        a, b = u * u, -2 * u
         print(f"U_{i}^2:")
         print(a)
         print(f"-2 * U_{i}:")
@@ -52,13 +52,13 @@ def test_b(n = 4):
 
 """)
 
-    U = [Diagram.U(n, i) for i in range(n - 1)]
+    U = [TL.U(n, i) for i in range(n - 1)]
 
     for i, u in enumerate(U):
         j = i - 1
 
         if j in range(len(U)):
-            a, b = u.compose(U[j]).compose(u), u
+            a, b = u * U[j] * u, u
             print(f"U_{i} * U_{{{i}-1}} * U_{i}:")
             print(a)
             print(f"U_{i}:")
@@ -69,7 +69,7 @@ def test_b(n = 4):
         j = i + 1
 
         if j in range(len(U)):
-            a, b = u.compose(U[j]).compose(u), u
+            a, b = u * U[j] * u, u
             print(f"U_{i} * U_{{{i}+1}} * U_{i}:")
             print(a)
             print(f"U_{i}:")
@@ -95,12 +95,12 @@ def test_c(n = 4):
 
 """)
 
-    U = [Diagram.U(n, i) for i in range(n - 1)]
+    U = [TL.U(n, i) for i in range(n - 1)]
 
     for i, u in enumerate(U):
         for j, v in enumerate(U):
             if j - i > 1:
-                a, b = u.compose(v), v.compose(u)
+                a, b = u * v, v * u
                 print(f"U_{i} * U_{j}:")
                 print(a)
                 print(f"U_{j} * U_{i}:")
