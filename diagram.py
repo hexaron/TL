@@ -237,14 +237,9 @@ class Diagram:
 
         return Diagram(connections, self._coefficient * other._coefficient)
 
-    def equal(self, other, check_coefficient=False):
+    def _has_same_diagram_as(self, other, check_coefficient=False):
         if not self.n == other.n:
             return False
-
-        # Compare the connections
-        if check_coefficient:
-            if not self._coefficient == other._coefficient:
-                return False
 
         # Compare the matches
         for match in self._connections:
@@ -268,7 +263,12 @@ class Diagram:
             other == 0):
             return self._coefficient == 0
 
-        return self.equal(other, check_coefficient=True)
+        # Comapre the coefficients
+        if not self._coefficient == other._coefficient:
+            return False
+
+        # Compare the actual diagrams
+        return self._has_same_diagram_as(other, check_coefficient=True)
 
     def __and__(self, other):
         return self.tensor(other)
@@ -293,7 +293,7 @@ class Diagram:
     def __add__(self, other):
         # Diagram + other
         # => other is Diagram
-        assert self.equal(other)
+        assert self._has_same_diagram_as(other)
 
         return Diagram(self._connections, self._coefficient + other._coefficient)
 

@@ -57,7 +57,7 @@ class TL:
 
             # `.copy()` is necessary because of `remove` in iteration
             for other in diagrams.copy():
-                if diagram.equal(other):
+                if diagram._has_same_diagram_as(other):
                     diagram += other
                     diagrams.remove(other)
 
@@ -70,7 +70,7 @@ class TL:
         # self subset of other
         for diagram in self._diagrams:
             # Using `diagram in other._diagrams` is not possible
-            if any(diagram.equal(d) for d in other._diagrams):
+            if any(diagram._has_same_diagram_as(d) for d in other._diagrams):
                 continue
             else:
                 logging.info(f"{repr(self)} is not euqal to {repr(other)} because of {repr(diagram)} in {repr(self)}")
@@ -79,7 +79,7 @@ class TL:
         # self superset of other
         for diagram in other._diagrams:
             # Using `diagram in self._diagrams` is not possible
-            if any(diagram.equal(d) for d in self._diagrams):
+            if any(diagram._has_same_diagram_as(d) for d in self._diagrams):
                 continue
             else:
                 logging.info(f"{repr(self)} is not euqal to {repr(other)} because of {repr(diagram)} in {repr(other)}")
