@@ -1,4 +1,5 @@
 from fractions import Fraction
+import renderer
 import logging
 
 
@@ -307,52 +308,4 @@ class Diagram:
         return f"{self._coefficient} * {self._connections}"
 
     def __str__(self):
-        """
-        And finally some dang ASCII art.
-        """
-
-        string = f"\n{self._coefficient} *\n  "
-
-        string += "".join(str(i) + " " if len(str(i)) == 1 else str(i) for i in range(2 * self.n))
-
-        for line in range(self.n):
-            # Record which number wants which symbol below (i.e. " ", "|", "\" or "/")
-            symbols = [None for i in range(2 * self.n)]
-
-            for match in self._connections:
-                i, j = min(match), max(match)
-
-                if j - i - 1 < 2 * line:
-                    symbols[i] = " "
-                    symbols[j] = " "
-                elif j - i - 1 > 2 * line:
-                    symbols[i] = "|"
-                    symbols[j] = "|"
-                else:
-                    symbols[i] = "\\"
-                    symbols[j] = "/"
-
-            if all([symbol == " " for symbol in symbols]):
-                break
-
-            # Add " " between each two symbols
-            # Then split the list again for character replacement
-            joined_symbol_list = list(" ".join(symbols))
-
-            # We want to add "_" between "\" and "/"
-            replace_underscore = False
-
-            for i in range(len(joined_symbol_list)):
-                if joined_symbol_list[i] == "\\":
-                    replace_underscore = True
-                elif joined_symbol_list[i] == "/":
-                    replace_underscore = False
-                # Do not replace "\" and "/"
-                else:
-                    if replace_underscore:
-                        joined_symbol_list[i] = "_"
-
-            string += "\n  "
-            string += "".join(joined_symbol_list)
-
-        return string + "\n"
+        return "\n" + renderer.render(self) + "\n"

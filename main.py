@@ -4,6 +4,9 @@ from tl import TL
 from jones_wenzl import JW
 import tl_tests
 import diagram_tests
+import renderer
+
+renderer.set_render_mode(renderer.DYCK_PATH)
 
 # logging.basicConfig(level=logging.DEBUG)
 
