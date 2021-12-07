@@ -3,9 +3,9 @@ This module contains all the supported ways of turning a `Diagram` or `TL` into
 a string.
 """
 
-CORSSINGLESS_MATCHING = 0
-DYCK_PATH = 1
-STRING_DIAGRAM = 2
+STRING_DIAGRAM = 0
+CORSSINGLESS_MATCHING = 1
+DYCK_PATH = 2
 
 
 def set_render_mode(render_mode):
@@ -14,9 +14,9 @@ def set_render_mode(render_mode):
 
 def render(diagram):
     switch = {
-        0: corssingless_matching,
-        1: dyck_path,
-        2: string_diagram
+        0: string_diagram,
+        1: corssingless_matching,
+        2: dyck_path
     }
 
     return switch[RenderMode._render_mode](diagram)
@@ -24,7 +24,7 @@ def render(diagram):
 
 class RenderMode:
     # The default render mode
-    _render_mode = CORSSINGLESS_MATCHING
+    _render_mode = STRING_DIAGRAM
 
 """
 Some dang ASCII art.
@@ -36,7 +36,8 @@ def string_diagram(diagram):
 
     # There are numbers at the top and the bottom
     # They contain spaces in between
-    size = n + (n - 1)
+    width = n + (n - 1)
+    heigth = width
 
     coefficient = f"{diagram._coefficient} * "
     left_offset = "".join(" " for i in range(len(coefficient)))
@@ -44,7 +45,7 @@ def string_diagram(diagram):
     string = left_offset + "".join(str(i) + " " if len(str(i)) == 1 else str(i) for i in range(diagram.n))
 
     # A two dimensional grid of all the symbols to be placed
-    symbols = [[" " for j in range(size)] for i in range(size)]
+    symbols = [[" " for j in range(width)] for i in range(heigth)]
 
     for match in diagram._connections:
         i, j = min(match), max(match)
@@ -54,11 +55,17 @@ def string_diagram(diagram):
             # j on top
             if j < n:
                 # CASE: Cup
-                for k in range(j - i):
+                assert (j - i + 1) % 2 == 0
+
+                # The length of the slanted segments
+                u = (j - i + 1) // 2
+
+                for k in range(u):
                     symbols[k][2 * i + k] = "\\"
                     symbols[k][2 * j - k] = "/"
 
-                symbols[j - i - 1][i + j] = "_"
+                for k in range(j - i):
+                    symbols[u - 1][2 * i + u + k] = "_"
             # j at bottom
             else:
                 # CASE: String from top to bottom
@@ -73,7 +80,7 @@ def string_diagram(diagram):
 
                 # The case where there is no slanted segment
                 if i == j:
-                    for k in range(size):
+                    for k in range(heigth):
                         symbols[k][2 * i] = "|"
                 else:
                     # We start by determining how long the slanted segment has
@@ -83,9 +90,9 @@ def string_diagram(diagram):
                     else:
                         length = 2 * i - 2 * j + 1
 
-                    # assert (size - length) % 2 == 0
+                    assert (heigth - length) % 2 == 0
 
-                    vertical_lengths = (size - length) // 2
+                    vertical_lengths = (heigth - length) // 2
 
                     # 1.
                     for k in range(vertical_lengths):
@@ -93,7 +100,7 @@ def string_diagram(diagram):
 
                     # 3.
                     for k in range(vertical_lengths):
-                        symbols[size - k - 1][2 * j] = "|"
+                        symbols[heigth - k - 1][2 * j] = "|"
 
                     # 2.
                     for k in range(length):
@@ -111,14 +118,19 @@ def string_diagram(diagram):
             # Flip i and j
             i, j = 2 * n - j - 1, 2 * n - i - 1
 
+            assert (j - i + 1) % 2 == 0
+
+            # The length of the slanted segments
+            u = (j - i + 1) // 2
+
+            for k in range(u):
+                symbols[heigth - k - 1][2 * i + k] = "/"
+                symbols[heigth - k - 1][2 * j - k] = "\\"
+
             for k in range(j - i):
-                symbols[size - k - 1][2 * i + k] = "/"
-                symbols[size - k - 1][2 * j - k] = "\\"
+                symbols[heigth - u - 1][2 * i + u + k] = "_"
 
-            symbols[size - (j - i) - 1][i + j] = "_"
-
-
-    for i in range(2 * n - 1):
+    for i in range(heigth):
         string += "\n"
 
         # Draw the coefficient in the vertical center
@@ -183,7 +195,7 @@ def corssingless_matching(diagram):
 
 
 def dyck_path(diagram):
-    string = f"{diagram._coefficient} ("
+    string = f"{diagram._coefficient} * ("
 
     # For each i in range(n) we can have a + or -
     symbols = [None for i in range(2 * diagram.n)]

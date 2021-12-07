@@ -6,8 +6,6 @@ import tl_tests
 import diagram_tests
 import renderer
 
-renderer.set_render_mode(renderer.STRING_DIAGRAM)
-
 # logging.basicConfig(level=logging.DEBUG)
 
 
