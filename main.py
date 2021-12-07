@@ -14,4 +14,5 @@ import renderer
 #
 # assert JW.get(4) * JW.get(4) == JW.get(4)
 
-print(JW.get(4))
+renderer.set_render_mode(renderer.DYCK_PATH)
+print(TL.U(3, 0) * TL.U(3, 1))

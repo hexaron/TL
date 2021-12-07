@@ -1,10 +1,45 @@
 """
-This module contains all the supported ways of turning a `Diagram` or `TL` into
-a string.
+This module contains all the supported ways of turning a `Diagram` (and thus
+also a `TL`) into a string for printing.
+The supported renderers are:
+
+    `STRING_DIAGRAM`
+        This is the default renderer.
+        Renders diagrams as string diagrams, e.g.
+
+        >>> renderer.set_render_mode(renderer.STRING_DIAGRAM)
+        >>> print(TL.U(3, 0) * TL.U(3, 1))
+
+            0 1 2
+            \_/ /
+               /
+        1 *   /
+             / _
+            / / \
+            5 4 3
+
+    `CROSSINGLESS_MATCHING`
+        Renders diagrams as corssingless matchings, e.g.
+
+        >>> renderer.set_render_mode(renderer.CROSSINGLESS_MATCHING)
+        >>> print(TL.U(3, 0) * TL.U(3, 1))
+
+        1 *
+          0 1 2 3 4 5
+          \_/ | \_/ |
+              \_____/
+
+    `DYCK_PATH`
+        Renders diagrams as Dyck paths, e.g.
+
+        >>> renderer.set_render_mode(renderer.DYCK_PATH)
+        >>> print(TL.U(3, 0) * TL.U(3, 1))
+
+        1 * (+-++--)
 """
 
 STRING_DIAGRAM = 0
-CORSSINGLESS_MATCHING = 1
+CROSSINGLESS_MATCHING = 1
 DYCK_PATH = 2
 
 
@@ -25,6 +60,7 @@ def render(diagram):
 class RenderMode:
     # The default render mode
     _render_mode = STRING_DIAGRAM
+
 
 """
 Some dang ASCII art.
@@ -197,7 +233,7 @@ def corssingless_matching(diagram):
 def dyck_path(diagram):
     string = f"{diagram._coefficient} * ("
 
-    # For each i in range(n) we can have a + or -
+    # For each i in range(2 * n) we can have a + or -
     symbols = [None for i in range(2 * diagram.n)]
 
     for match in diagram._connections:
