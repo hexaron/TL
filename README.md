@@ -4,7 +4,7 @@ TL is a tool for performing [Termeley-Lieb](https://en.wikipedia.org/wiki/Temper
 There are no other libraries required.
 
 This project was initially developed during a course on [Lie algebras](https://en.wikipedia.org/wiki/Lie_algebra) for calculating Jones-Wenzl projectors in <img src="https://render.githubusercontent.com/render/math?math=TL%5E%5Cmathbb%7BC%7D_n(-2)">.
-To this end this library was created, which now can be used for more general calculations.
+But this library can be used for general calculations.
 
 ## Install
 
@@ -38,25 +38,74 @@ In your _main.py_ you can now import TL via:
 from TL import *
 ```
 
-## First example
-Write the following into your _main.py_ using your favorite editor:
+## Examples
+Find many examples in the [_TL/examples.py_](https://github.com/hexaron/TL/blob/main/examples.py) file.
+
+### First example
+
+Put the following into your _main.py_ using your favorite editor:
 ```python
 from TL.tl import TL
 
-# Get U_2 in TL_4
+# Get `U_2` in TL_4
 U_2 = TL.U(4, 2)
 
-# Print the string diagram of U_2
+# Print the string diagram of `U_2`
 print(U_2)
 
 U_1 = TL.U(4, 1)
 
-# Print the composition of U_1 and U_2
+# Print the composition of `U_1` and `U_2`
 # (read right to left as usual)
 print(U_1 * U_2)
 
-# Print the tensor product of U_1 and U_2
+# Print the tensor product of `U_1` and `U_2`
 # (resulting in an element of TL_8)
 print(U_1 & U_2)
 ```
-Find more examples in the [_TL/examples.py_](https://github.com/hexaron/TL/blob/main/examples.py) file.
+Running _main.py_ now produces the following output:
+```
+    0 1 2 3 
+    | | \_/
+    | |    
+    | |    
+1 * | |    
+    | |    
+    | |  _ 
+    | | / \
+    7 6 5 4 
+
+
+
+
+    0 1 2 3 
+    | \_/ |
+    |     /
+    |    / 
+1 * |   /  
+    |  /   
+    | /  _ 
+    | | / \
+    7 6 5 4 
+
+
+
+
+    0 1 2 3 4 5 6 7 
+    | \_/ | | | \_/
+    |     | | |    
+    |     | | |    
+    |     | | |    
+    |     | | |    
+    |     | | |    
+    |     | | |    
+1 * |     | | |    
+    |     | | |    
+    |     | | |    
+    |     | | |    
+    |     | | |    
+    |     | | |    
+    |  _  | | |  _ 
+    | / \ | | | / \
+    1514131211109 8 
+```
