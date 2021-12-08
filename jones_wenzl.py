@@ -1,5 +1,5 @@
 from fractions import Fraction
-from tl import TL
+from .tl import TL
 
 
 class JW:

@@ -1,4 +1,4 @@
-from tl import TL
+from .tl import TL
 
 
 def test(n = 3):

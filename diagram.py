@@ -1,6 +1,6 @@
 from fractions import Fraction
-import renderer
 import logging
+from . import renderer
 
 
 class Diagram:

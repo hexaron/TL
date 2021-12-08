@@ -1,10 +1,10 @@
 import logging
-from diagram import Diagram
-from tl import TL
-from jones_wenzl import JW
-import tl_tests
-import diagram_tests
-import renderer
+from .diagram import Diagram
+from .tl import TL
+from .jones_wenzl import JW
+from . import tl_tests
+from . import diagram_tests
+from . import renderer
 
 # logging.basicConfig(level=logging.DEBUG)
 

@@ -1,6 +1,6 @@
 import logging
 from fractions import Fraction
-from diagram import Diagram
+from .diagram import Diagram
 
 
 class TL:

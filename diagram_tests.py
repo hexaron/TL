@@ -1,4 +1,4 @@
-from diagram import Diagram
+from .diagram import Diagram
 
 
 def test(n = 3):
